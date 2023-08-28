@@ -1,0 +1,14 @@
+name: Create envfile
+
+on: [ push ]
+  workflow_dispatch:
+
+jobs:
+  create-envfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ toJSON(secrets) }}
+      - run: echo "Value of VAR1: $VAR1"
