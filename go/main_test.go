@@ -11,7 +11,7 @@ import (
 
 func TestGeEnvFromGithub(t *testing.T) {
 	godotenv.Load("../.env")
-	test := os.Getenv("ENV_VAR")
+	test := os.Getenv("TEST_ENV_FILE_VAR")
 	fmt.Println(test)
 	require.NotNil(t, test)
 }
