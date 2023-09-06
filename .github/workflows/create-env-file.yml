@@ -1,8 +1,10 @@
 name: Create envfile
 
 on:
+  push:
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "main", "develop" ]
   workflow_dispatch:
 
 jobs:
@@ -16,9 +18,9 @@ jobs:
 
       - name: Generate .env
         run: |
-          ls
-          echo -n ${{ secrets.ENV }} | base64 --decode > .env
-          ls
+          ls -a
+          echo -n ${{ secrets.ENV_FILE }} | base64 -d > .env
+          ls -a
 
       - name: Set up Golang
         uses: actions/setup-go@v3
