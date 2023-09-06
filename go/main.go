@@ -9,5 +9,5 @@ import (
 
 func main() {
 	godotenv.Load("./.env")
-	fmt.Println(os.Getenv("ENV_VAR"))
+	fmt.Println(os.Getenv("TEST_ENV_FILE_VAR"))
 }
