@@ -1,0 +1,47 @@
+name: Hotfix Git Flow Automation
+
+on:
+  push:
+    branches:
+      - 'hotfix/*'  # Trigger for hotfix branches
+  workflow_dispatch:
+
+jobs:
+  create-hotfix-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the hotfix branch
+      - name: Checkout hotfix branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debugging info
+        run: |
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "GitHub Ref Name: ${{ github.ref_name }}"
+
+      # Step 2: Create Pull Request from hotfix to master (production fix)
+      - name: Create PR to master
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Hotfix: Merge changes from ${{ github.ref_name }} to master"
+          title: "Hotfix: Merge ${{ github.ref_name }} to master"
+          body: "This PR merges hotfix ${{ github.ref_name }} into master."
+          branch: auto-hotfix-${{ github.ref_name }}-to-master  # Temporary branch for PR to master
+          base: master  # Target branch is master
+          head: ${{ github.ref_name }}  # Source hotfix branch
+
+      # Step 3: Create Pull Request from hotfix to develop (sync fix with develop)
+      - name: Create PR to develop
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Hotfix: Merge changes from ${{ github.ref_name }} to develop"
+          title: "Hotfix: Merge ${{ github.ref_name }} to develop"
+          body: "This PR merges hotfix ${{ github.ref_name }} into develop."
+          branch: auto-hotfix-${{ github.ref_name }}-to-develop  # Temporary branch for PR to develop
+          base: develop  # Target branch is develop
+          head: ${{ github.ref_name }}  # Source hotfix branch
