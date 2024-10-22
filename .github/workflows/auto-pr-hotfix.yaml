@@ -14,10 +14,11 @@ jobs:
 
       - name: Reset promotion branch
         run: |
-          git fetch origin main:${{ github.ref_name }}
+          git fetch origin ${{ github.ref_name }}:main
           git reset --hard main
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          base: main
           branch: promote-${{ github.ref_name }}
