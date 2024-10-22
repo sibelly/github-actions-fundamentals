@@ -20,5 +20,4 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          base: main
           branch: promote-${{ github.ref_name }}
