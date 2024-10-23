@@ -12,20 +12,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Verify if PR already open
+      id: pr-check
       env:
         GH_TOKEN: ${{ secrets.PAT }}
       run: |
         prs_list=$(gh pr list --search "${{ github.ref_name }}")
         echo "${prs_list}"
-        for pr in $prs_list; do
-          echo ${pr}
-        done
         if [ -n "$prs_list" ]; then
           echo "PR already opened"
-          exit 0
+          echo "::set-output name=pr_exists::true"
+        else
+          echo "::set-output name=pr_exists::false"
         fi
 
-    - name: create pull request
+    - name: Create pull request
+      if: steps.pr-check.outputs.pr_exists == 'false'  # Only run if no PR exists
       run: gh pr create -B main -H ${{ github.ref_name }} --title 'Merge ${{ github.ref_name }} into main' --body 'Created by Github action'
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
