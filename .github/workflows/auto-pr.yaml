@@ -11,7 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: |
+    - name: Verify if PR already open
+      env:
+        GH_TOKEN: ${{ secrets.PAT }}
+      run: |
         prs_list=$(gh pr list --search "${{ github.ref_name }}")
         echo "${prs_list}"
         for pr in $prs_list; do
