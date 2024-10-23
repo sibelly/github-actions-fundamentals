@@ -17,7 +17,7 @@ jobs:
         for pr in $prs_list; do
           echo ${pr}
         done
-        if: ${{ prs_list != '' }}
+        if: ${ ${#prs_list}  > 0 }
         then
           echo "PR already opened"
           exit 0
