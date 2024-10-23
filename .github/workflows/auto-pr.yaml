@@ -10,6 +10,7 @@ jobs:
   promote-hotfix:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
     - name: create pull request
       run: gh pr create -B main -H ${{ github.ref_name }} --title 'Merge ${{ github.ref_name }} into main' --body 'Created by Github action'
       env:
