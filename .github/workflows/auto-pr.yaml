@@ -20,8 +20,7 @@ jobs:
         for pr in $prs_list; do
           echo ${pr}
         done
-        if: ${ ${#prs_list}  > 0 }
-        then
+        if [ -n "$prs_list" ]; then
           echo "PR already opened"
           exit 0
         fi
