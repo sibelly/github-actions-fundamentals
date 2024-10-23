@@ -17,6 +17,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          base: ${{ github.ref_name }}
           branch: promote-${{ github.ref_name }}
           commit-message: "Promote: Merge changes from ${{ github.ref_name }} to main"
           title: "[Promote] Hotfix: Merge ${{ github.ref_name }} to main (manual merge required)"
