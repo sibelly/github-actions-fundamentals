@@ -11,6 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - run: |
+        prs_list=$(gh pr list --search "${{ github.ref_name }}")
+        echo "${prs_list}"
+        for pr in $prs_list; do
+          echo ${pr}
+        done
+        if: ${{ prs_list != '' }}
+        then
+          echo "PR already opened"
+          exit 0
+        fi
+
     - name: create pull request
       run: gh pr create -B main -H ${{ github.ref_name }} --title 'Merge ${{ github.ref_name }} into main' --body 'Created by Github action'
       env:
