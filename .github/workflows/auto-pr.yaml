@@ -20,9 +20,9 @@ jobs:
         echo "${prs_list}"
         if [ -n "$prs_list" ]; then
           echo "PR already opened"
-          echo "::set-output name=pr_exists::true"
+          echo "pr_exists=true" >> $GITHUB_OUTPUT  # Using GITHUB_OUTPUT for setting output
         else
-          echo "::set-output name=pr_exists::false"
+          echo "pr_exists=false" >> $GITHUB_OUTPUT  # Using GITHUB_OUTPUT for setting output
         fi
 
     - name: Create pull request
