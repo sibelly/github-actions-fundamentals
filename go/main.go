@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	fmt.Println("sera que vai abrir outro PR??????? hotfix 1")
 	godotenv.Load("./.env")
 	fmt.Println(os.Getenv("TEST_ENV_FILE_VAR"))
 }
