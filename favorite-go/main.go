@@ -43,6 +43,8 @@ func main() {
 
 	mux.HandleFunc("GET /", app.home)
 	mux.HandleFunc("GET /health", app.health)
+	mux.HandleFunc("GET /livez", app.livez)
+	mux.HandleFunc("GET /readyz", app.readyz)
 	mux.HandleFunc("GET /favorites", app.listFavorites)
 	mux.HandleFunc("POST /favorites", app.createFavorite)
 
@@ -84,6 +86,39 @@ func (app *App) health(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]string{
 		"status": "healthy",
+	})
+}
+
+func (app *App) livez(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"status": "alive",
+	})
+}
+
+func (app *App) readyz(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	defer cancel()
+
+	if err := app.redis.Ping(ctx).Err(); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"status": "unhealthy",
+			"redis":  err.Error(),
+		})
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"status": "ready",
 	})
 }
 

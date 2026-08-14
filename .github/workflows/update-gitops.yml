@@ -9,12 +9,12 @@ on:
         type: string
 
       image:
-        description: Docker image
+        description: Container image
         required: true
         type: string
 
       image_tag:
-        description: Docker image tag
+        description: Container image tag
         required: true
         type: string
 
@@ -27,8 +27,6 @@ jobs:
     name: Update ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
-    environment: ${{ inputs.environment }}
-
     steps:
       - name: Checkout GitOps repository
         uses: actions/checkout@v7
@@ -40,27 +38,38 @@ jobs:
       - name: Update image
         working-directory: k8s-fundamentals
         env:
+          ENVIRONMENT: ${{ inputs.environment }}
           IMAGE: ${{ inputs.image }}
           IMAGE_TAG: ${{ inputs.image_tag }}
-          ENVIRONMENT: ${{ inputs.environment }}
         run: |
-           cd apps/favorite-go/overlays/${ENVIRONMENT}
+          cd apps/favorite-go/overlays/${ENVIRONMENT}
 
-           kustomize edit set image \
-           ${IMAGE}=${IMAGE}:${IMAGE_TAG}
+          kustomize edit set image \
+            ${IMAGE}=${IMAGE}:${IMAGE_TAG}
+
+          echo "Updated ${ENVIRONMENT} to ${IMAGE}:${IMAGE_TAG}"
+
+      - name: Show changes
+        working-directory: k8s-fundamentals
+        run: git diff
 
       - name: Commit and push
         working-directory: k8s-fundamentals
         env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
           ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add .
 
-          git diff --cached --quiet && exit 0
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
 
-          git commit -m "chore(${ENVIRONMENT}): update favorite-go to ${IMAGE_TAG}"
+          git commit \
+            -m "chore(${ENVIRONMENT}): update favorite-go to ${IMAGE_TAG}"
+
           git push
