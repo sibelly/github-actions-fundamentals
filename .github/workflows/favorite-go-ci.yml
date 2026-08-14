@@ -59,7 +59,7 @@ jobs:
 
   update-dev:
     name: Update Dev GitOps
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/feat/*' || github.ref == 'refs/heads/develop'
     needs:
       - build
     uses: ./.github/workflows/update-gitops.yml
