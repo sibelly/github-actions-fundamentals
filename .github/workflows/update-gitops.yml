@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout GitOps repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: sibelly/k8s-fundamentals
           token: ${{ secrets.gitops_token }}

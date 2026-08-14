@@ -10,7 +10,7 @@ jobs:
       name: development
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Generate .env
         run: |
