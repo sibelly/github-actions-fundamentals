@@ -1,0 +1,66 @@
+name: Update GitOps
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: string
+
+      image:
+        description: Docker image
+        required: true
+        type: string
+
+      image_tag:
+        description: Docker image tag
+        required: true
+        type: string
+
+    secrets:
+      gitops_token:
+        required: true
+
+jobs:
+  update:
+    name: Update ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: sibelly/k8s-fundamentals
+          token: ${{ secrets.gitops_token }}
+          path: k8s-fundamentals
+
+      - name: Update image
+        working-directory: k8s-fundamentals
+        env:
+          IMAGE: ${{ inputs.image }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+           cd apps/favorite-go/overlays/${ENVIRONMENT}
+
+           kustomize edit set image \
+           ${IMAGE}=${IMAGE}:${IMAGE_TAG}
+
+      - name: Commit and push
+        working-directory: k8s-fundamentals
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          git diff --cached --quiet && exit 0
+
+          git commit -m "chore(${ENVIRONMENT}): update favorite-go to ${IMAGE_TAG}"
+          git push
