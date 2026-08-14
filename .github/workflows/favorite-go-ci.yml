@@ -1,0 +1,84 @@
+name: Favorite Go CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - feat/*
+    paths:
+      - 'favorite-go/**/*.go'
+      - 'favorite-go/go.mod'
+      - 'favorite-go/go.sum'
+      - 'favorite-go/Dockerfile'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+          - develop
+          - main
+
+env:
+  IMAGE_NAME: sibelly/favorite-go
+
+jobs:
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate image tag
+        id: meta
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+
+          echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "Image: ${{ env.IMAGE_NAME }}:$IMAGE_TAG"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./favorite-go
+          file: ./favorite-go/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
+
+  update-dev:
+    name: Update Dev GitOps
+    if: github.ref == 'refs/heads/feat/*' || github.ref == 'refs/heads/develop'
+    needs:
+      - build
+    uses: ./.github/workflows/update-gitops.yml
+    with:
+      environment: develop
+      image: sibelly/favorite-go
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets:
+      gitops_token: ${{ secrets.PAT }}
+
+  update-prod:
+    name: Update Prod GitOps
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+    uses: ./.github/workflows/update-gitops.yml
+    with:
+      environment: main
+      image: sibelly/favorite-go
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets:
+      gitops_token: ${{ secrets.PAT }}
